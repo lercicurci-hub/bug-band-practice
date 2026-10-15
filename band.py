@@ -6,6 +6,7 @@ import json
 import os
 
 SAVE = "save.json"
+CONCERT_FEE = 200  # 开演唱会的宣传费（音符）
 
 BUGS = {
     "蝉":   {"role": "吉他手", "cost": 0,   "rate": 2,  "line": "吱——吱吱！"},
@@ -59,6 +60,22 @@ def recruit(state):
     print(f"{name} 加入了乐队！{BUGS[name]['line']}")
 
 
+def concert(state):
+    if len(state["band"]) < 3:
+        print("乐队至少要 3 位乐手才能开演唱会，先去招募吧。")
+        return
+    if state["notes"] < CONCERT_FEE:
+        print(f"宣传费不够（需要 {CONCERT_FEE} 音符）。")
+        return
+    state["notes"] -= CONCERT_FEE
+    state["concerts"] += 1
+    cheer = 150 + 50 * state["concerts"]
+    state["notes"] += cheer
+    print("🎸 演唱会开演！")
+    print("  " + " ".join(f"{b}{BUGS[b]['line']}" for b in state["band"]))
+    print(f"观众欢呼！收获 {cheer} 音符（累计开演 {state['concerts']} 场）")
+
+
 def status(state):
     print(f"音符：{state['notes']}｜乐队：{len(state['band'])}/{len(BUGS)} 人｜"
           f"演唱会：{state['concerts']} 场")
@@ -69,13 +86,15 @@ def status(state):
 def main():
     state = load()
     print("=== 虫鸣乐队练习室 ===")
-    print("指令：p 练习 / r 招募 / s 查看 / q 存档退出")
+    print("指令：p 练习 / r 招募 / c 演唱会 / s 查看 / q 存档退出")
     while True:
         cmd = input("> ").strip().lower()
         if cmd == "p":
             practice(state)
         elif cmd == "r":
             recruit(state)
+        elif cmd == "c":
+            concert(state)
         elif cmd == "s":
             status(state)
         elif cmd == "q":
@@ -83,7 +102,7 @@ def main():
             print("已存档，下次继续排练！")
             break
         else:
-            print("指令：p 练习 / r 招募 / s 查看 / q 存档退出")
+            print("指令：p 练习 / r 招募 / c 演唱会 / s 查看 / q 存档退出")
 
 
 if __name__ == "__main__":
