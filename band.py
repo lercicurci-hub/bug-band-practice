@@ -1,28 +1,35 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""虫鸣乐队练习室：终端放置小游戏。招募昆虫乐手，攒音符，开演唱会。"""
+"""Bug Band Practice Room: a tiny terminal idle game.
+Recruit bug musicians, earn notes, hold concerts."""
 
 import json
 import os
 import random
 
 SAVE = "save.json"
-CONCERT_FEE = 200  # 开演唱会的宣传费（音符）
+CONCERT_FEE = 200  # publicity cost (notes) to hold a concert
+RAIN_CHANCE = 0.2  # chance of a rain event during practice
 
 BUGS = {
-    "蝉":   {"role": "吉他手", "cost": 0,   "rate": 2,  "line": "吱——吱吱！"},
-    "甲虫": {"role": "鼓手",   "cost": 30,  "rate": 5,  "line": "咚咚锵！"},
-    "蟋蟀": {"role": "主唱",   "cost": 80,  "rate": 12, "line": "瞿瞿瞿～"},
-    "萤火虫": {"role": "灯光师", "cost": 150, "rate": 25, "line": "biubiu✨"},
-    "蚂蚁": {"role": "贝斯手", "cost": 300, "rate": 50, "line": "嗡嗡嗡……"},
+    "Cicada":  {"role": "Guitarist", "cost": 0,   "rate": 2,  "line": "Chirp—chirp!"},
+    "Beetle":  {"role": "Drummer",   "cost": 30,  "rate": 5,  "line": "Boom-chick!"},
+    "Cricket": {"role": "Vocalist",  "cost": 80,  "rate": 12, "line": "Chirpy-chirp~"},
+    "Firefly": {"role": "Lighting",  "cost": 150, "rate": 25, "line": "Glow-glow ✨"},
+    "Ant":     {"role": "Bassist",   "cost": 300, "rate": 50, "line": "Hum-hum-hum..."},
 }
 
 
 def load():
     if os.path.exists(SAVE):
         with open(SAVE, encoding="utf-8") as f:
-            return json.load(f)
-    return {"notes": 0, "band": ["蝉"], "concerts": 0}
+            state = json.load(f)
+        # drop band members saved by older non-English versions
+        state["band"] = [b for b in state.get("band", []) if b in BUGS]
+        if not state["band"]:
+            state["band"] = ["Cicada"]
+        return state
+    return {"notes": 0, "band": ["Cicada"], "concerts": 0}
 
 
 def save(state):
@@ -30,70 +37,73 @@ def save(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
-RAIN_CHANCE = 0.2  # 雨天事件概率
-
-
 def practice(state):
     gain = sum(BUGS[b]["rate"] for b in state["band"])
     if random.random() < RAIN_CHANCE:
         gain //= 2
-        print("🌧 突然下起雨！乐手们冒雨演出，观众纷纷撑伞——本轮音符减半")
+        print("🌧 It's raining! The bugs play on as the audience opens "
+              "umbrellas — notes halved this round")
     state["notes"] += gain
-    print(f"练习结束！乐队合奏 +{gain} 音符（共 {state['notes']}）")
+    print(f"Practice done! The band played together +{gain} notes "
+          f"({state['notes']} total)")
     for b in state["band"]:
-        print(f"  {b}（{BUGS[b]['role']}）：{BUGS[b]['line']}")
+        print(f"  {b} ({BUGS[b]['role']}): {BUGS[b]['line']}")
 
 
 def recruit(state):
-    print("可招募：")
+    print("Available musicians:")
     for name, info in BUGS.items():
-        owned = "（已在队）" if name in state["band"] else f"（{info['cost']} 音符）"
-        print(f"  {name}·{info['role']} {owned}")
-    name = input("招募谁？（输入名字，回车跳过）> ").strip()
+        owned = "(in band)" if name in state["band"] else f"({info['cost']} notes)"
+        print(f"  {name} · {info['role']} {owned}")
+    name = input("Recruit whom? (name, Enter to skip) > ").strip()
     if not name:
         return
-    if name not in BUGS:
-        print("没有这位乐手。")
+    # be forgiving about case
+    match = next((n for n in BUGS if n.lower() == name.lower()), None)
+    if not match:
+        print("No such musician.")
         return
+    name = match
     if name in state["band"]:
-        print("他已经在乐队了！")
+        print("Already in the band!")
         return
     cost = BUGS[name]["cost"]
     if state["notes"] < cost:
-        print(f"音符不够（需要 {cost}，现有 {state['notes']}）。")
+        print(f"Not enough notes (need {cost}, have {state['notes']}).")
         return
     state["notes"] -= cost
     state["band"].append(name)
-    print(f"{name} 加入了乐队！{BUGS[name]['line']}")
+    print(f"{name} joined the band! {BUGS[name]['line']}")
 
 
 def concert(state):
     if len(state["band"]) < 3:
-        print("乐队至少要 3 位乐手才能开演唱会，先去招募吧。")
+        print("Need at least 3 musicians for a concert. Go recruit first.")
         return
     if state["notes"] < CONCERT_FEE:
-        print(f"宣传费不够（需要 {CONCERT_FEE} 音符）。")
+        print(f"Not enough publicity budget (need {CONCERT_FEE} notes).")
         return
     state["notes"] -= CONCERT_FEE
     state["concerts"] += 1
     cheer = 150 + 50 * state["concerts"]
     state["notes"] += cheer
-    print("🎸 演唱会开演！")
-    print("  " + " ".join(f"{b}{BUGS[b]['line']}" for b in state["band"]))
-    print(f"观众欢呼！收获 {cheer} 音符（累计开演 {state['concerts']} 场）")
+    print("🎸 Concert time!")
+    print("  " + " ".join(f"{b}: {BUGS[b]['line']}" for b in state["band"]))
+    print(f"The crowd goes wild! +{cheer} notes "
+          f"({state['concerts']} concerts so far)")
 
 
 def status(state):
-    print(f"音符：{state['notes']}｜乐队：{len(state['band'])}/{len(BUGS)} 人｜"
-          f"演唱会：{state['concerts']} 场")
+    print(f"Notes: {state['notes']} | Band: {len(state['band'])}/{len(BUGS)} | "
+          f"Concerts: {state['concerts']}")
     for b in state["band"]:
-        print(f"  - {b}（{BUGS[b]['role']}，每轮 +{BUGS[b]['rate']}）")
+        print(f"  - {b} ({BUGS[b]['role']}, +{BUGS[b]['rate']}/round)")
 
 
 def main():
     state = load()
-    print("=== 虫鸣乐队练习室 ===")
-    print("指令：p 练习 / r 招募 / c 演唱会 / s 查看 / q 存档退出")
+    print("=== Bug Band Practice Room ===")
+    print("Commands: p practice / r recruit / c concert / s status / q save & quit")
     while True:
         cmd = input("> ").strip().lower()
         if cmd == "p":
@@ -106,10 +116,11 @@ def main():
             status(state)
         elif cmd == "q":
             save(state)
-            print("已存档，下次继续排练！")
+            print("Progress saved. See you at the next rehearsal!")
             break
         else:
-            print("指令：p 练习 / r 招募 / c 演唱会 / s 查看 / q 存档退出")
+            print("Commands: p practice / r recruit / c concert / "
+                  "s status / q save & quit")
 
 
 if __name__ == "__main__":

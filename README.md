@@ -1,39 +1,41 @@
-# 虫鸣乐队练习室 🎸
+# Bug Band Practice Room 🎸
 
-一个终端放置小游戏：招募昆虫乐手，攒音符，开演唱会。
+A tiny terminal idle game: recruit bug musicians, earn notes, hold concerts.
 
 ```
-   🎸 吱——吱吱！咚咚锵！瞿瞿瞿～ 🎶
+   🎸 chirp! boom-chick! glow-glow! 🎶
 ```
 
-## 运行
+## Run
 
 ```bash
 python3 band.py
 ```
 
-需要 Python 3（无第三方依赖）。
+Requires Python 3, no third-party dependencies.
 
-## 玩法
+## How to play
 
-| 指令 | 动作 |
-|------|------|
-| `p` | 练习：乐队合奏，按人头赚音符 |
-| `r` | 招募：花音符签下新的昆虫乐手 |
-| `c` | 演唱会：3 人以上成团可开演，收获观众欢呼 |
-| `s` | 查看乐队状态 |
-| `q` | 存档退出（进度保存在 `save.json`） |
+| Command | Action |
+|---------|--------|
+| `p` | Practice: the band plays together and earns notes |
+| `r` | Recruit: spend notes to sign new bug musicians |
+| `c` | Concert: needs 3+ members, earns cheering (even more notes) |
+| `s` | Show band status |
+| `q` | Save and quit (progress stored in `save.json`) |
 
-## 乐手一览
+Watch out for random **rain events** during practice: notes get halved, but the show goes on. 🌧
 
-| 乐手 | 定位 | 签约费（音符） | 每轮产出 |
-|------|------|---------------|---------|
-| 蝉 | 吉他手 | 0（初始成员） | 2 |
-| 甲虫 | 鼓手 | 30 | 5 |
-| 蟋蟀 | 主唱 | 80 | 12 |
-| 萤火虫 | 灯光师 | 150 | 25 |
-| 蚂蚁 | 贝斯手 | 300 | 50 |
+## Musicians
 
-## 小目标
+| Musician | Role | Signing fee (notes) | Output / round |
+|----------|------|--------------------|----------------|
+| Cicada | Guitarist | 0 (founding member) | 2 |
+| Beetle | Drummer | 30 | 5 |
+| Cricket | Vocalist | 80 | 12 |
+| Firefly | Lighting | 150 | 25 |
+| Ant | Bassist | 300 | 50 |
 
-集齐 5 位乐手，开满 10 场演唱会，成为昆虫界的传奇经纪人。
+## Goal
+
+Collect all 5 musicians, hold 10 concerts, become a legend among bug managers.
