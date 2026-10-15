@@ -4,6 +4,7 @@
 
 import json
 import os
+import random
 
 SAVE = "save.json"
 CONCERT_FEE = 200  # 开演唱会的宣传费（音符）
@@ -29,8 +30,14 @@ def save(state):
         json.dump(state, f, ensure_ascii=False, indent=2)
 
 
+RAIN_CHANCE = 0.2  # 雨天事件概率
+
+
 def practice(state):
     gain = sum(BUGS[b]["rate"] for b in state["band"])
+    if random.random() < RAIN_CHANCE:
+        gain //= 2
+        print("🌧 突然下起雨！乐手们冒雨演出，观众纷纷撑伞——本轮音符减半")
     state["notes"] += gain
     print(f"练习结束！乐队合奏 +{gain} 音符（共 {state['notes']}）")
     for b in state["band"]:
